@@ -26,6 +26,9 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Show build output
+        run: ls -la out/ && cat out/index.html | head -20
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
