@@ -22,14 +22,15 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: |
+          echo "=== BUILD START ==="
+          npm run build 2>&1
+          echo "=== BUILD END ==="
         env:
           NODE_ENV: production
 
-      - name: Show build output
-        run: ls -la out/ && cat out/index.html | head -20
-
       - name: Deploy to Cloudflare Pages
+        if: success()
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
