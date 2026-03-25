@@ -7,160 +7,42 @@ interface Song {
   title: string;
   titleEn: string;
   category: "chinese" | "english" | "hebrew";
-  lyrics: string[];
-  youtubeId?: string;
+  youtubeId: string;
   background?: string;
 }
 
 const songs: Song[] = [
   {
-    id: "amazing-grace",
-    title: "奇异恩典",
-    titleEn: "Amazing Grace",
-    category: "english",
-    youtubeId: "yC6r_5kZqV4",
-    background: "约翰·牛顿（John Newton）于1779年创作，是世界上最著名的赞美诗之一。约翰·牛顿曾是奴隶贸易商，后成为牧师，这首歌表达了他从罪恶中得到救赎的感恩之情。",
-    lyrics: [
-      "Amazing grace, how sweet the sound",
-      "That saved a wretch like me",
-      "I once was lost, but now am found",
-      "Was blind but now I see",
-      "",
-      "'Twas grace that taught my heart to fear",
-      "And grace my fears relieved",
-      "How precious did that grace appear",
-      "The hour I first believed"
-    ]
-  },
-  {
-    id: "what-a-friend",
-    title: "千古保障",
-    titleEn: "What a Friend We Have in Jesus",
-    category: "english",
-    youtubeId: "Da86kRpuXaM",
-    background: "由约瑟·史克文（Joseph Scriven）于1855年创作，词曲优美，表达了信徒与主耶稣之间亲密的友谊和倚靠。史克文曾经历两次失去未婚妻的痛苦，这首歌安慰了无数人。",
-    lyrics: [
-      "What a friend we have in Jesus",
-      "All our sins and griefs to bear",
-      "What a privilege to carry",
-      "Everything to God in prayer",
-      "",
-      "O what peace we often forfeit",
-      "O what needless pain we bear",
-      "All because we do not carry",
-      "Everything to God in prayer"
-    ]
-  },
-  {
-    id: "shinu",
-    title: "何等爱慕",
-    titleEn: "Shinu (שמעו)",
-    category: "hebrew",
-    youtubeId: "H1N_cHgK-8U",
-    background: "这是一首优美的希伯来语敬拜歌曲，歌词来自申命记6:4-5「以色列啊，你要听！耶和华我们神是独一的主。你要尽心、尽性、尽力爱耶和华你的神。」",
-    lyrics: [
-      "שמעו עמי ואדברה",
-      "ישראל אם לו אבוא",
-      "ה' אלהינו ה' אחד",
-      "",
-      "ואהבת את ה' אלהיך",
-      "בכל לבבך ובכל נפשך",
-      "ובכל מאדך"
-    ]
-  },
-  {
-    id: "ehye",
-    title: "自有永有",
-    titleEn: "Ehye (אהיה)",
-    category: "hebrew",
-    youtubeId: "Jl4Lis8FjCU",
-    background: "「自有永有」是神在出埃及记3:14对摩西的启示：「我是自有永有的。」这首希伯来语敬拜歌曲表达了神永恒不变的属性。",
-    lyrics: [
-      "אהיה אשר אהיה",
-      "ה' נצח הוא",
-      "קדמון ואחרון",
-      "מלך עולם",
-      "",
-      "אני הוא התחלה",
-      "וגם הסוף",
-      "כבודי לך אענה"
-    ]
-  },
-  {
-    id: "ruach",
-    title: "圣灵吹拂",
-    titleEn: "Ruach (רוח)",
-    category: "hebrew",
-    youtubeId: "Yl59DrKHE4Q",
-    background: "「圣灵啊，我感谢你」是一首充满活力的中文敬拜诗歌，表达对圣灵降临的感恩和渴望。",
-    lyrics: [
-      "圣灵如鸽子降临",
-      "滋润每颗心灵",
-      "主的爱如活水江河",
-      "流进万国万民",
-      "",
-      "主啊我们需要你",
-      "像需要呼吸空气",
-      "圣灵如风随意吹",
-      "带来生命的气息"
-    ]
-  },
-  {
-    id: "doxology",
-    title: "荣耀颂",
-    titleEn: "Doxology",
+    id: "hosanna",
+    title: "和撒那",
+    titleEn: "Hosanna",
     category: "chinese",
-    youtubeId: "X-Rx7-GLxm0",
-    background: "「荣耀颂」是基督教崇拜中经典的赞美诗，歌词源自使徒保罗的教导，荣耀归于圣父、圣子、圣灵三位一体的神。",
-    lyrics: [
-      "荣耀归于圣父圣子圣灵",
-      "起初这样",
-      "现今这样",
-      "以后也这样",
-      "",
-      "荣耀归与全能的父神",
-      "独生的子",
-      "和圣灵",
-      "真神全能于无穷"
-    ]
+    youtubeId: "33ZlGdNVaG8",
+    background: "「和撒那」是圣经中最常见的赞美呼喊之一，源自希伯来语「הוֹשִׁיעָה נָא」（Hoshia-na），意思是「求你拯救」或「赞美归于神」。这首诗歌表达对主耶稣的赞美和敬拜，在新约福音书中，耶稣荣进耶路撒冷时，众人高喊「和撒那！奉主名来的以色列王是应当称颂的！」（约翰福音12:13）"
   },
   {
-    id: "holy-holy-holy",
-    title: "圣哉圣哉圣哉",
-    titleEn: "Holy, Holy, Holy",
+    id: "lily-of-the-valley",
+    title: "谷中百合花",
+    titleEn: "The Lily of the Valley",
     category: "english",
-    youtubeId: "oBs2Sk_6Kc4",
-    background: "由雷金纳德·希伯（Reginald Heber）作词，于1826年创作。这首歌歌词取自以赛亚书6:3和启示录4:8，表达对圣洁三位一体神的赞美。",
-    lyrics: [
-      "Holy, holy, holy",
-      "Lord God Almighty",
-      "Early in the morning",
-      "Our song shall rise to Thee",
-      "",
-      "Holy, holy, holy",
-      "Merciful and mighty",
-      "God in three persons",
-      "Blessed Trinity"
-    ]
+    youtubeId: "YofWQiepn18",
+    background: "「谷中百合花」是一首经典的基督教赞美诗，歌词取自雅歌2:1「我是沙仑的玫瑰花，是谷中的百合花」。诗歌表达信徒与主之间纯美的关系，主耶稣是那谷中清洁美丽的百合花，在众多试探和忧虑中给予信徒安慰和力量。"
   },
   {
-    id: "be-thou-my-vision",
-    title: "为我民爱我永活神",
-    titleEn: "Be Thou My Vision",
-    category: "english",
-    youtubeId: "Y7BDgNotdXw",
-    background: "这是一首古老的爱尔兰赞美诗，歌词表达了对神引导的渴望，祈求神成为我们人生各方面的异象和力量。",
-    lyrics: [
-      "Be thou my vision",
-      "O Lord of my heart",
-      "Naught be all else to me",
-      "Save that thou art",
-      "",
-      "Thou my best thought",
-      "By day or by night",
-      "Waking or sleeping",
-      "Thy presence my light"
-    ]
+    id: "one-day",
+    title: "有一天",
+    titleEn: "One Day",
+    category: "chinese",
+    youtubeId: "p_GoSBedSBw",
+    background: "「有一天」是一首充满盼望的敬拜歌曲。歌词传达基督徒对永恒荣耀的盼望——有一天主要再来，擦去我们一切的眼泪，那日将不再有死亡、悲哀、哭号和疼痛。这首歌安慰和鼓励所有仰望主再来的人。"
+  },
+  {
+    id: "jerusalem-of-gold",
+    title: "金色的耶路撒冷",
+    titleEn: "Jerusalem of Gold",
+    category: "hebrew",
+    youtubeId: "JH8gtdDA5x0",
+    background: "「金色的耶路撒冷」（Yerushalayim Shel Zahav）是以色列最著名的歌曲之一，由 Naomi Shemer 于 1967 年创作。这首歌描绘了耶路撒冷的美丽和神圣，表达了以色列人对这块应许之地的深厚感情。虽然不是传统赞美诗，但在以色列和世界各地的基督徒中也广受欢迎，因为它反映了圣经中圣城耶路撒冷的荣耀。"
   }
 ];
 
@@ -188,7 +70,7 @@ export default function WorshipPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-purple-900 mb-2">🎵 敬拜歌曲 Worship</h1>
-      <p className="text-gray-600 mb-8">中英文赞美诗、希伯来语敬拜歌曲、YouTube视频</p>
+      <p className="text-gray-600 mb-8">中英文赞美诗、希伯来语敬拜歌曲</p>
 
       {/* Search Bar */}
       <div className="mb-6">
@@ -235,8 +117,11 @@ export default function WorshipPage() {
                 <p className="text-sm text-gray-500">{song.titleEn}</p>
               </div>
             </div>
-            <div className="text-xs text-gray-400 mt-2">
-              {song.youtubeId && "🎬 YouTube"}
+            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
+              <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+              <span>点击播放</span>
             </div>
           </button>
         ))}
@@ -274,27 +159,21 @@ export default function WorshipPage() {
             </div>
 
             <div className="p-6">
-              {/* YouTube Video */}
-              {activeSong.youtubeId && (
-                <div className="mb-6">
-                  <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-                    <iframe
-                      className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${activeSong.youtubeId}?rel=0`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                  <a
-                    href={`https://www.youtube.com/watch?v=${activeSong.youtubeId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                  >
-                    ▶️ 在 YouTube 上观看
-                  </a>
+              {/* YouTube Embed */}
+              <div className="mb-6">
+                <div className="aspect-video rounded-xl overflow-hidden bg-gray-100">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${activeSong.youtubeId}`}
+                    title={activeSong.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="rounded-xl"
+                  ></iframe>
                 </div>
-              )}
+              </div>
 
               {/* Background */}
               {activeSong.background && (
@@ -303,18 +182,6 @@ export default function WorshipPage() {
                   <p className="text-gray-700 text-sm">{activeSong.background}</p>
                 </div>
               )}
-
-              {/* Lyrics */}
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <h3 className="font-bold text-gray-900 mb-4">🎤 歌词 Lyrics</h3>
-                <div className="space-y-1 text-gray-700">
-                  {activeSong.lyrics.map((line, index) => (
-                    <p key={index} className={line === "" ? "h-4" : ""}>
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -325,10 +192,10 @@ export default function WorshipPage() {
         <div className="bg-purple-50 rounded-xl p-6 mt-4">
           <h2 className="font-bold text-purple-900 mb-2">💡 温馨提示</h2>
           <ul className="text-gray-600 text-sm space-y-1">
-            <li>• 点击任意歌曲卡片查看详情和视频</li>
+            <li>• 点击任意歌曲卡片查看详情和观看视频</li>
             <li>• 使用顶部分类筛选不同语言的歌曲</li>
             <li>• 输入关键词搜索你想要的歌曲</li>
-            <li>• 后续将支持更多歌曲和歌词显示</li>
+            <li>• 视频可直接在页面内播放</li>
           </ul>
         </div>
       )}
