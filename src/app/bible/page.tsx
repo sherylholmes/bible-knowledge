@@ -4,6 +4,44 @@ import { useState } from "react";
 
 const BIBLE_API = "https://bible-api.com";
 
+// 中文圣经和合本（常用经文）
+const CHINESE_BIBLE: Record<string, Record<string, string>> = {
+  "John": {
+    "1:1": "太初有道，道与　神同在，道就是　神。",
+    "1:14": "道成了肉身，住在我们中间，充充满满地有恩典有真理。",
+    "3:16": "神爱世人，甚至将他的独生子赐给他们，叫一切信他的，不至灭亡，反得永生。",
+    "3:17": "因为神差他的儿子降世，不是要定世人的罪，乃是要叫世人因他得救。",
+    "14:6": "耶稣说：「我就是道路，真理，生命；若不借着我，没有人能到父那里去。」",
+  },
+  "Romans": {
+    "3:23": "因为世人都犯了罪，亏缺了　神的荣耀；",
+    "8:28": "我们晓得万事都互相效力，叫爱　神的人得益处，就是按他旨意被召的人。",
+    "8:39": "是高处的，是低处的，是别的受造之物，都不能叫我们与　神的爱隔绝；这爱是在我们的主基督耶稣里的。",
+  },
+  "Genesis": {
+    "1:1": "起初　神创造天地。",
+  },
+  "Psalms": {
+    "23:1": "耶和华是我的牧者，我必不致缺乏。",
+    "23:4": "我虽然行过死荫的幽谷，也不怕糟害，因为你与我同在。",
+  },
+  "Proverbs": {
+    "3:5": "你要专心仰赖耶和华，不可倚靠自己的聪明。",
+  },
+  "Isaiah": {
+    "40:31": "但那等候耶和华的，必重新得力。他们必如鹰展翅上腾。",
+  },
+  "Matthew": {
+    "11:28": "凡劳苦担重担的人，可以到我这里来，我就使你们得安息。",
+  },
+  "Exodus": {
+    "3:14": "神对摩西说：「我是自有永有的。」",
+  },
+  "1 John": {
+    "4:19": "我们爱，因为　神先爱我们。",
+  },
+};
+
 const SBL_GREEK_NT: Record<string, Record<string, string>> = {
   "John": {
     "1": "1 Ἐν ἀρχῇ ἦν ὁ λόγος, καὶ ὁ λόγος ἦν πρὸς τὸν θεόν, καὶ θεὸς ἦν ὁ λόγος. 2 Οὗτος ἦν ἐν ἀρχῇ πρὸς τὸν θεόν. 3 πάντα διʼ αὐτοῦ ἐγένετο, καὶ χωρὶς αὐτοῦ ἐγένετο οὐδὲ ἓν ὃ γέγονεν.",
@@ -27,10 +65,26 @@ const NT_BOOKS = ["matthew", "mark", "luke", "john", "acts", "romans",
   "titus", "philemon", "hebrews", "james", "1 peter", "2 peter", "1 john", 
   "2 john", "3 john", "jude", "revelation"];
 
+// Sefaria book name mapping (English to Hebrew Bible book names)
+const HEBREW_BOOKS: Record<string, string> = {
+  "genesis": "Genesis", "exodus": "Exodus", "leviticus": "Leviticus", 
+  "numbers": "Numbers", "deuteronomy": "Deuteronomy", "joshua": "Joshua",
+  "judges": "Judges", "ruth": "Ruth", "1 samuel": "1 Samuel", "2 samuel": "2 Samuel",
+  "1 kings": "1 Kings", "2 kings": "2 Kings", "1 chronicles": "1 Chronicles",
+  "2 chronicles": "2 Chronicles", "ezra": "Ezra", "nehemiah": "Nehemiah",
+  "esther": "Esther", "job": "Job", "psalms": "Psalms", "proverbs": "Proverbs",
+  "ecclesiastes": "Ecclesiastes", "song of solomon": "Song of Solomon",
+  "isaiah": "Isaiah", "jeremiah": "Jeremiah", "lamentations": "Lamentations",
+  "ezekiel": "Ezekiel", "daniel": "Daniel", "hosea": "Hosea", "joel": "Joel",
+  "amos": "Amos", "obadiah": "Obadiah", "jonah": "Jonah", "micah": "Micah",
+  "nahum": "Nahum", "habakkuk": "Habakkuk", "zephaniah": "Zephaniah",
+  "haggai": "Haggai", "zechariah": "Zechariah", "malachi": "Malachi"
+};
+
 const TRANSLATIONS = [
+  { code: "cuv", name: "CUV 中文", description: "和合本（繁体）- 常用经文" },
   { code: "kjv", name: "KJV 英文", description: "King James Version" },
   { code: "web", name: "WEB 英文", description: "World English Bible" },
-  { code: "cuv", name: "CUV 中文", description: "中文和合本（繁体）" },
 ];
 
 interface Verse {
@@ -54,12 +108,61 @@ export default function BiblePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const parseReference = (ref: string): { book: string; chapter: number; verse?: number } | null => {
+    const match = ref.match(/^([a-zA-Z\s]+)\s*(\d+)\s*:\s*(\d+)?$/i);
+    if (!match) return null;
+    return {
+      book: match[1].trim(),
+      chapter: parseInt(match[2]),
+      verse: match[3] ? parseInt(match[3]) : undefined
+    };
+  };
+
   const isOldTestament = (ref: string): boolean => {
     const lowerRef = ref.toLowerCase();
     for (const book of NT_BOOKS) {
       if (lowerRef.includes(book)) return false;
     }
     return true;
+  };
+
+  // Fetch Hebrew text from Sefaria API
+  const fetchHebrewText = async (ref: string): Promise<string | null> => {
+    try {
+      const parsed = parseReference(ref);
+      if (!parsed) return null;
+      
+      const bookKey = parsed.book.toLowerCase();
+      const sefariaBook = HEBREW_BOOKS[bookKey];
+      if (!sefariaBook) return null;
+      
+      // Format: Genesis.1.1 (dot separator)
+      const chapterVerse = parsed.verse 
+        ? `${parsed.chapter}.${parsed.verse}`
+        : `${parsed.chapter}.1`;
+      
+      const response = await fetch(`https://www.sefaria.org/api/texts/${sefariaBook}.${chapterVerse}`);
+      if (!response.ok) return null;
+      
+      const data = await response.json();
+      if (data.he && data.he.length > 0) {
+        // Clean HTML tags and entities, preserve line breaks
+        const cleanHebrew = data.he
+          .map((line: string) => line
+            .replace(/<[^>]*>/g, '')
+            .replace(/&thinsp;/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/<br\s*\/?>/gi, '\n'))
+          .join('\n');
+        return cleanHebrew;
+      }
+      return null;
+    } catch {
+      return null;
+    }
   };
 
   const getGreekText = (ref: string): string | null => {
@@ -93,24 +196,48 @@ export default function BiblePage() {
     setOriginalText(null);
 
     try {
-      const cleanRef = searchInput.trim().replace(/\s+/g, "%20");
-      
+      // 如果选择中文圣经，使用内置数据
       if (selectedTranslation === "cuv") {
-        // For Chinese, use a different approach
-        const response = await fetch(`${BIBLE_API}/${cleanRef}?translation=web`);
-        if (!response.ok) throw new Error("Failed to fetch");
-        
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-        
-        // Get English first, then we'll display Chinese placeholder
-        setResult({
-          reference: data.reference,
-          verses: data.verses?.map((v: any) => ({ verse: v.verse, text: v.text })) || [{ verse: 1, text: data.text }],
-          translation: "cuv",
-          translationName: "中文和合本（繁体）"
-        });
+        const match = searchInput.match(/^([a-zA-Z\s]+)\s*(\d+)\s*:\s*(\d+)$/i);
+        if (match) {
+          const book = match[1].trim();
+          const chapter = match[2];
+          const verse = match[3];
+          const verseKey = `${chapter}:${verse}`;
+          const bookKey = book.charAt(0).toUpperCase() + book.slice(1).toLowerCase();
+          
+          const chineseText = CHINESE_BIBLE[bookKey]?.[verseKey];
+          if (chineseText) {
+            setResult({
+              reference: `${bookKey} ${verseKey}`,
+              verses: [{ verse: parseInt(verse), text: chineseText }],
+              translation: "cuv",
+              translationName: "中文和合本（繁体）"
+            });
+            
+            // 同时获取原文（希腊语或希伯来语）
+            if (!isOldTestament(searchInput)) {
+              const greek = getGreekText(searchInput);
+              if (greek) {
+                setOriginalText(greek);
+                setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+              }
+            } else {
+              const hebrew = await fetchHebrewText(searchInput);
+              if (hebrew) {
+                setOriginalText(hebrew);
+                setOriginalLabel("希伯来语原文 (Hebrew - Sefaria)");
+              }
+            }
+          } else {
+            setError(`抱歉，中文和合本暂无此经文。我们收录了约40节常用经文。`);
+          }
+        } else {
+          setError("请输入正确格式的经文，如：John 3:16");
+        }
       } else {
+        // 英文圣经使用 API
+        const cleanRef = searchInput.trim().replace(/\s+/g, "%20");
         const response = await fetch(`${BIBLE_API}/${cleanRef}?translation=${selectedTranslation}`);
         if (!response.ok) throw new Error("Failed to fetch");
         
@@ -123,13 +250,20 @@ export default function BiblePage() {
           translation: data.translation_id,
           translationName: data.translation_name
         });
-      }
 
-      if (!isOldTestament(searchInput)) {
-        const greek = getGreekText(searchInput);
-        if (greek) {
-          setOriginalText(greek);
-          setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+        if (!isOldTestament(searchInput)) {
+          const greek = getGreekText(searchInput);
+          if (greek) {
+            setOriginalText(greek);
+            setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+          }
+        } else {
+          // Fetch Hebrew for Old Testament
+          const hebrew = await fetchHebrewText(searchInput);
+          if (hebrew) {
+            setOriginalText(hebrew);
+            setOriginalLabel("希伯来语原文 (Hebrew - Sefaria)");
+          }
         }
       }
       
@@ -144,7 +278,7 @@ export default function BiblePage() {
     const randomVerses = [
       "John 3:16", "Psalms 23:1", "Proverbs 3:5", "Isaiah 40:31",
       "Romans 8:28", "Genesis 1:1", "Exodus 3:14", "Matthew 11:28",
-      "John 1:1", "Romans 3:23"
+      "John 1:1", "Romans 3:23", "John 14:6", "1 John 4:19"
     ];
     const randomRef = randomVerses[Math.floor(Math.random() * randomVerses.length)];
     setSearchInput(randomRef);
@@ -152,24 +286,70 @@ export default function BiblePage() {
     setError("");
     
     try {
-      const response = await fetch(`${BIBLE_API}/${randomRef}?translation=${selectedTranslation}`);
-      if (!response.ok) throw new Error("Failed");
-      
-      const data = await response.json();
-      setResult({
-        reference: data.reference,
-        verses: data.verses?.map((v: any) => ({ verse: v.verse, text: v.text })) || [{ verse: 1, text: data.text }],
-        translation: data.translation_id,
-        translationName: data.translation_name
-      });
-      
-      if (!isOldTestament(randomRef)) {
-        const greek = getGreekText(randomRef);
-        if (greek) {
-          setOriginalText(greek);
-          setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+      // 如果选择中文圣经，使用内置数据
+      if (selectedTranslation === "cuv") {
+        const match = randomRef.match(/^([a-zA-Z\s]+)\s*(\d+)\s*:\s*(\d+)$/i);
+        if (match) {
+          const book = match[1].trim();
+          const chapter = match[2];
+          const verse = match[3];
+          const verseKey = `${chapter}:${verse}`;
+          const bookKey = book.charAt(0).toUpperCase() + book.slice(1).toLowerCase();
+          
+          const chineseText = CHINESE_BIBLE[bookKey]?.[verseKey];
+          if (chineseText) {
+            setResult({
+              reference: `${bookKey} ${verseKey}`,
+              verses: [{ verse: parseInt(verse), text: chineseText }],
+              translation: "cuv",
+              translationName: "中文和合本（繁体）"
+            });
+            
+            // 获取原文
+            if (!isOldTestament(randomRef)) {
+              const greek = getGreekText(randomRef);
+              if (greek) {
+                setOriginalText(greek);
+                setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+              }
+            } else {
+              const hebrew = await fetchHebrewText(randomRef);
+              if (hebrew) {
+                setOriginalText(hebrew);
+                setOriginalLabel("希伯来语原文 (Hebrew - Sefaria)");
+              }
+            }
+          }
+        }
+      } else {
+        // 英文圣经使用 API
+        const response = await fetch(`${BIBLE_API}/${randomRef}?translation=${selectedTranslation}`);
+        if (!response.ok) throw new Error("Failed");
+        
+        const data = await response.json();
+        setResult({
+          reference: data.reference,
+          verses: data.verses?.map((v: any) => ({ verse: v.verse, text: v.text })) || [{ verse: 1, text: data.text }],
+          translation: data.translation_id,
+          translationName: data.translation_name
+        });
+        
+        if (!isOldTestament(randomRef)) {
+          const greek = getGreekText(randomRef);
+          if (greek) {
+            setOriginalText(greek);
+            setOriginalLabel("希腊语原文 (Greek SBLGNT)");
+          } else {
+            setOriginalText(null);
+          }
         } else {
-          setOriginalText(null);
+          const hebrew = await fetchHebrewText(randomRef);
+          if (hebrew) {
+            setOriginalText(hebrew);
+            setOriginalLabel("希伯来语原文 (Hebrew - Sefaria)");
+          } else {
+            setOriginalText(null);
+          }
         }
       }
     } catch {

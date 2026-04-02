@@ -1,29 +1,14 @@
 "use client";
 
-import { createClient } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleGoogleLogin = async () => {
-    const supabase = createClient();
+  const handleGoogleLogin = () => {
     setLoading(true);
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      alert("登录失败：" + error.message);
-      setLoading(false);
-    }
-    // If successful, Supabase redirects automatically
+    // Redirect to our OAuth login endpoint
+    window.location.href = "/api/auth/login";
   };
 
   return (

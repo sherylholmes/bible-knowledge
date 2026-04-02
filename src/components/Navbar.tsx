@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase";
+import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/", label: "首页", labelEn: "Home" },
@@ -12,15 +11,33 @@ const NAV_ITEMS = [
   { href: "/worship", label: "敬拜歌曲", labelEn: "Worship" },
 ];
 
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  picture: string | null;
+}
+
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
-  const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data.user);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.refresh();
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    window.location.href = "/";
   };
 
   return (
@@ -50,13 +67,38 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Auth Button */}
-            <Link
-              href="/login"
-              className="ml-4 px-4 py-2 bg-white text-blue-900 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
-            >
-              登录
-            </Link>
+            {/* Auth Section */}
+            {!loading && (
+              <div className="ml-4 flex items-center gap-3">
+                {user ? (
+                  <>
+                    {user.picture && (
+                      <img
+                        src={user.picture}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full border-2 border-white"
+                      />
+                    )}
+                    <span className="text-sm text-blue-100">
+                      {user.name || user.email}
+                    </span>
+                    <button
+                      onClick={handleLogout}
+                      className="px-3 py-1.5 text-sm bg-blue-800 hover:bg-blue-700 rounded-lg transition"
+                    >
+                      退出
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 bg-white text-blue-900 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
+                  >
+                    登录
+                  </Link>
+                )}
+              </div>
+            )}
 
             {/* Language Toggle Placeholder */}
             <button className="ml-2 px-3 py-1 border border-blue-400 rounded text-sm hover:bg-blue-800 transition">
@@ -116,16 +158,22 @@ export default function Navbar() {
                 {item.label} ({item.labelEn})
               </Link>
             ))}
-            <Link
-              href="/login"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium bg-white text-blue-900 mt-2"
-            >
-              登录
-            </Link>
-            <button className="w-full mt-2 px-3 py-2 border border-blue-400 rounded text-sm hover:bg-blue-700">
-              中/EN (语言切换)
-            </button>
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="w-full mt-2 px-3 py-2 bg-blue-700 rounded text-sm hover:bg-blue-600"
+              >
+                退出登录
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium bg-white text-blue-900 mt-2"
+              >
+                登录
+              </Link>
+            )}
           </div>
         </div>
       )}
