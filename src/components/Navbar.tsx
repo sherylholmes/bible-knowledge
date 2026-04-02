@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 
 const NAV_ITEMS = [
   { href: "/", label: "首页", labelEn: "Home" },
@@ -14,6 +15,13 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   return (
     <nav className="bg-blue-900 text-white shadow-lg">
@@ -42,8 +50,16 @@ export default function Navbar() {
               </Link>
             ))}
 
+            {/* Auth Button */}
+            <Link
+              href="/login"
+              className="ml-4 px-4 py-2 bg-white text-blue-900 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
+            >
+              登录
+            </Link>
+
             {/* Language Toggle Placeholder */}
-            <button className="ml-4 px-3 py-1 border border-blue-400 rounded text-sm hover:bg-blue-800 transition">
+            <button className="ml-2 px-3 py-1 border border-blue-400 rounded text-sm hover:bg-blue-800 transition">
               中/EN
             </button>
           </div>
@@ -100,6 +116,13 @@ export default function Navbar() {
                 {item.label} ({item.labelEn})
               </Link>
             ))}
+            <Link
+              href="/login"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-base font-medium bg-white text-blue-900 mt-2"
+            >
+              登录
+            </Link>
             <button className="w-full mt-2 px-3 py-2 border border-blue-400 rounded text-sm hover:bg-blue-700">
               中/EN (语言切换)
             </button>
