@@ -1,50 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { decodeJWT } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get("session")?.value;
   const pathname = request.nextUrl.pathname;
 
-  // Public routes that don't need auth
+  // Public routes
   const publicRoutes = ["/", "/bible", "/knowledge", "/worship", "/login"];
   const isPublic = publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Allow access to static assets, API routes (except protected ones), and public routes
-  const isApiRoute = pathname.startsWith("/api/");
   const isAuthApi = pathname.startsWith("/api/auth/");
   const isStaticAsset = pathname.startsWith("/_next/") || pathname.includes(".");
 
-  if (isPublic || isAuthApi || isStaticAsset || isApiRoute) {
+  if (isPublic || isAuthApi || isStaticAsset) {
     return NextResponse.next();
   }
 
-  // For protected routes, require a valid session
+  // Require valid session
   if (!sessionToken) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Verify session in D1 (only on Cloudflare Pages runtime)
-  // During next dev, skip DB check and allow the request
-  const env = (request as NextRequest & { env?: { DB: D1Database } }).env;
-  const db = env?.DB;
-
-  if (db && sessionToken) {
-    const result = await db
-      .prepare(
-        `SELECT s.id FROM sessions s
-         WHERE s.id = ? AND s.expires_at > datetime('now')`
-      )
-      .bind(sessionToken)
-      .first();
-
-    if (!result) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
+  const user = decodeJWT(sessionToken);
+  if (!user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
