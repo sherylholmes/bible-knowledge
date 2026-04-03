@@ -1,3 +1,8 @@
 name = "bible-knowledge"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = ".next"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bible-knowledge-auth"
+database_id = "9a6c604f-2984-46a3-a34c-1568e3cd28fc"
