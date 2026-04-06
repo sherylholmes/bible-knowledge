@@ -18,7 +18,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --prefer-offline --no-audit --progress=false
+        run: CI=true npm install --ignore-scripts --no-audit --progress=false
 
       - name: Build
         run: npm run build
