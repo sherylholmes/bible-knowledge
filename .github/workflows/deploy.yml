@@ -17,11 +17,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Clean npm cache
-        run: npm cache clean --force
-
       - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --progress=false --prefer-offline=false
+        run: npm install --ignore-scripts --no-save --no-audit --progress=false
 
       - name: Build
         run: npm run build
