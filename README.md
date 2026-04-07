@@ -1,16 +1,70 @@
-# React + Vite
+# Bible Knowledge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A multilingual Bible reading application built for deep study and worship.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Framework:** Next.js 16 (App Router)
+- **Styling:** Tailwind CSS v4
+- **Language:** TypeScript
+- **API:** Bolls.life (Hebrew/Greek interlinear + audio)
+- **Deployment:** Cloudflare Pages
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Multilingual Scripture Reading** — Read Bible passages in Chinese, English, and Hebrew/Greek side by side
+- **Original Text Comparison** — Hebrew/Greek interlinear with morphological analysis powered by Bolls.life API
+- **YouTube Worship Songs** — Integrated worship song search and playback for worship preparation
+- **Responsive Design** — Optimized for desktop and mobile reading
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Install dependencies
+pnpm install
+
+# Run development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+## Project Structure
+
+```
+src/app/          Next.js App Router pages and layouts
+src/components/   React components
+src/lib/          Utilities and API helpers
+public/           Static assets
+```
+
+## Environment Variables
+
+Copy `.env.local.example` to `.env.local` and configure:
+
+```bash
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_secret
+```
+
+## Deployment
+
+This project is configured for Cloudflare Pages deployment. Push to the `main` branch to trigger automatic builds.
+
+For manual builds:
+
+```bash
+pnpm build
+```
+
+The output is deployed directly to Cloudflare's edge network.
+
+## License
+
+Private.
