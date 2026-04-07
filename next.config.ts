@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Remove 'export' to enable server-side routes for Supabase Auth
-  // Cloudflare Pages will automatically use Pages Functions for dynamic routes
+  output: "export",
   images: {
     unoptimized: true,
   },
