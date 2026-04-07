@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
   { href: "/", label: "首页", labelEn: "Home" },
@@ -25,17 +26,38 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data.user);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    // Get initial session
+    supabase.auth.getUser().then(({ data: { user: supaUser } }) => {
+      if (supaUser) {
+        setUser({
+          id: supaUser.id,
+          email: supaUser.email || "",
+          name: supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || supaUser.email || "",
+          picture: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture || null,
+        });
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || "",
+          picture: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || null,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await supabase.auth.signOut();
     setUser(null);
     window.location.href = "/";
   };
@@ -113,26 +135,11 @@ export default function Navbar() {
               className="p-2 rounded-md hover:bg-blue-800 focus:outline-none"
               aria-label="Toggle menu"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
             </button>

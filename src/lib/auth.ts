@@ -1,68 +1,12 @@
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
-const CALLBACK_URL = process.env.NEXTAUTH_URL
-  ? `${process.env.NEXTAUTH_URL}/api/auth/callback`
-  : "https://shaunathelamb.com/api/auth/callback";
+"use client";
 
-function generateState(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from({ length: 32 }, () =>
-    chars.charAt(Math.floor(Math.random() * chars.length))
-  ).join("");
-}
-
-export async function getGoogleAuthUrl(): Promise<{ url: string; state: string }> {
-  const state = generateState();
-  const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: CALLBACK_URL,
-    response_type: "code",
-    scope: "openid email profile",
-    access_type: "offline",
-    prompt: "consent",
-    state,
-  });
-  return {
-    url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
-    state,
-  };
-}
-
-export async function exchangeCodeForTokens(code: string): Promise<{
-  access_token: string;
-  id_token: string;
-  refresh_token?: string;
-} | null> {
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: CALLBACK_URL,
-    }),
-  });
-  if (!response.ok) return null;
-  return response.json();
-}
-
-export async function getGoogleUserInfo(accessToken: string): Promise<{
+// Decode JWT payload without verification (used for reading Supabase session tokens)
+export function decodeJWT(token: string): {
   id: string;
   email: string;
   name: string;
-  picture: string;
-} | null> {
-  const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!response.ok) return null;
-  return response.json();
-}
-
-// Decode JWT payload (without verification — we trust Google's signature via id_token)
-export function decodeJWT(token: string): { id: string; email: string; name: string; picture: string } | null {
+  picture?: string;
+} | null {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
@@ -70,10 +14,49 @@ export function decodeJWT(token: string): { id: string; email: string; name: str
     return {
       id: payload.sub,
       email: payload.email,
-      name: payload.name,
+      name: payload.name || payload.email,
       picture: payload.picture,
     };
   } catch {
     return null;
   }
+}
+
+// Store session in localStorage (Supabase client handles this internally, but we use it for quick reads)
+export function getStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const session = localStorage.getItem("sb-session");
+    if (!session) return null;
+    const data = JSON.parse(session);
+    if (!data?.user) return null;
+    return {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email,
+      picture: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Store Supabase auth token in localStorage for middleware-less auth
+export function storeSession(accessToken: string, refreshToken?: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(
+    "sb-session",
+    JSON.stringify({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_at: Date.now() + 3600 * 1000,
+      token_type: "bearer",
+      user: null, // filled by getCurrentUser
+    })
+  );
+}
+
+export function clearSession() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("sb-session");
 }

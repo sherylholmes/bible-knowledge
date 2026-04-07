@@ -1,26 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type Tab = "login" | "register";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("login");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form fields
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleGoogleLogin = () => {
+  // Show error from URL (e.g. from callback)
+  const urlError = searchParams.get("error");
+  if (urlError && !error) {
+    const errorMessages: Record<string, string> = {
+      no_code: "授权码缺失，请重试",
+      auth_failed: "授权失败，请重试",
+      user_not_found: "用户不存在",
+    };
+    setError(errorMessages[urlError] || `授权错误: ${urlError}`);
+  }
+
+  const handleGoogleLogin = async () => {
     setGoogleLoading(true);
-    window.location.href = "/api/auth/login";
+    setError("");
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (authError) {
+      setError("Google 登录失败，请重试");
+      setGoogleLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,39 +53,26 @@ export default function LoginPage() {
 
     try {
       if (activeTab === "register") {
-        // Register
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, username, password }),
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username },
+          },
         });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "注册失败");
+        if (signUpError) {
+          setError(signUpError.message);
         } else {
-          setSuccess("注册成功！请查收验证邮件（测试模式下令牌已显示在下方）");
-          // For testing: show the verification token
-          if (data.verification_token) {
-            setSuccess(`${data.message}（测试令牌：${data.verification_token}）`);
-          }
-          // Switch to login tab after short delay
-          setTimeout(() => {
-            setActiveTab("login");
-            setPassword("");
-          }, 2000);
+          setSuccess("注册成功！请查收验证邮件。");
         }
       } else {
-        // Login
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "登录失败");
+        if (signInError) {
+          setError(signInError.message);
         } else {
-          // Redirect to home
           router.push("/");
           router.refresh();
         }
@@ -210,19 +219,18 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Forgot password link */}
-        {activeTab === "login" && (
-          <p className="mt-4 text-center text-sm">
-            <a href="/forgot-password" className="text-blue-600 hover:underline">
-              忘记密码？
-            </a>
-          </p>
-        )}
-
         <p className="mt-6 text-xs text-gray-400 text-center">
           登录即表示您同意我们的服务条款
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><p>加载中...</p></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
